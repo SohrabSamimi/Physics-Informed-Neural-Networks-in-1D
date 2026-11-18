@@ -1,5 +1,34 @@
 # Physics-Informed Neural Networks in 1D
 
+This [notebook](Physics-Informed%20Neural%20Networks.ipynb) compares two ways
+to learn the cosine on $[0, 2\pi]$. First, we train a regular neural network
+on 16 cosine values and see how it behaves beyond the last training point.
+Then we train a Physics-Informed Neural Network (PINN) of the same size using
+the equation and its initial conditions.
+
+## What the PINN learns
+
+The cosine solves this ordinary differential equation:
+
+$$
+y''(x) + y(x) = 0, \qquad y(0) = 1, \qquad y'(0) = 0.
+$$
+
+The PINN uses 15 points spread across the full interval. At each point,
+PyTorch computes the second derivative of the network output with respect to
+its input. The loss combines the mean squared residual $y_\theta'' + y_\theta$
+with a penalty for each initial condition. We use the cosine values only to
+evaluate the PINN after training.
+
+The notebook compares the two predictions on a grid of 500 points. It reports
+mean squared errors on the full grid and beyond the last labeled training
+point. That region tests extrapolation for the regular network, while the
+PINN has equation points there. The final plots compare the PINN's derivatives
+with $-\sin(x)$ and $-\cos(x)$.
+
+This example is based on the PINN approach introduced by
+[Raissi et al. (2017)](https://arxiv.org/abs/1711.10561).
+
 ## Run the notebook
 
 The setup below was verified on Linux with Python 3.12. It uses CPU-only
@@ -21,66 +50,3 @@ output_dir=$(mktemp -d)
 jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=300 \
   --output-dir="$output_dir" 'Physics-Informed Neural Networks.ipynb'
 ```
-
-PINNs were developed by Raissi et al. in 2017 in this article: https://arxiv.org/abs/1711.10561.
-
-Standard Neural Networks (NNs) generally fail at solving even simple linear PDEs. PINNs use NNs and incorporate the PDE inside the
-
-loss function, as we will see a few steps later.
-
-In some sense, PINNs are "semi-supervised" meaning that the equation drives the learning process (PINNs are supervised "by the equation").
-
-This repository first shows how NNs fail to learn a simple linear ODE outside the training set.
-
-We train a baseline Neural Network to learn the cosine function.
-
-We see here under a very good performance on the train set but not on the test set:
-
-![Baseline_NN_cosine](https://github.com/SohrabSamimi/Physics-Informed-Neural-Networks-example/assets/58103877/8e6d8f5b-0f7d-417c-9f96-f455f8145983)
-
-Afterwards, we take a completely different approach and we see the cosine function $x \longmapsto cos(x)$ as the solution of a second order differential equation, that is the 
-
-solution to:
-
-$y''=y$, 
-
-with initial conditions:
-
-$y(0)=1$, 
-
-$y'(0)=0$
-
-We use Physics-Informed Neural Networks ($PINNs$) to learn it using only 15 "equation" points. "Equation points" here
-
-indicate we don't need data at those points (knowing the ODE verified by data is enough).
-
-The central idea of $PINNs$ is to replace $y$ by a neural network $y_\theta$ and minimize the following loss:
-
-$L = MSE(y_\theta''-y_\theta) + (y_\theta(0)-1)² + y_\theta'(0)²$.
-
-If $L$ is close enough to $0$, it means that all the terms in the sum above are close to $0$, thus the differential
-
-equation is (almost) satisified.
-
-To do this, we do not need ANY data about the solution $y$ except for $y(0)$ and $y'(0)$, which is a major advantage compared 
-
-to classical NNs, which require a lot of data.
-
-We see that the $PINNs$ prediction and the true Cosine agree very well even outside the training set (15 points):
-
-after training the model, we have an average error of $5.10^{-6}$ on a test set of 500 points.
-
-![PINNS_COSINE](https://github.com/SohrabSamimi/Physics-Informed-Neural-Networks-example/assets/58103877/3e3350aa-18dc-4e3a-9015-8e22306984fb)
-
-
-The PINNS technique not only allows to get a good estimation of the function itself but also of its derivatives
-
-as we see below.
-
-We recall that we should get  $NN'(x) = -sin(x)$ and $NN''(x) = -cos(x)$
-
-![1st 2nd derivatives](https://github.com/SohrabSamimi/Physics-Informed-Neural-Networks-example/assets/58103877/8dd8f52c-50d1-4059-8c10-f79c621841fa)
-
-
-
-
