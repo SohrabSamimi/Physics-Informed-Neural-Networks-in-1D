@@ -1,5 +1,27 @@
 # Physics-Informed Neural Networks in 1D
 
+## Run the notebook
+
+The setup below was verified on Linux with Python 3.12. It uses CPU-only
+PyTorch and requires no GPU.
+
+```bash
+python3.12 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
+jupyter lab
+```
+
+In JupyterLab, open `Physics-Informed Neural Networks.ipynb` with the Python 3
+kernel and run all cells. To execute it from the terminal and write the results
+to a temporary directory, run this instead of starting JupyterLab:
+
+```bash
+output_dir=$(mktemp -d)
+jupyter nbconvert --to notebook --execute --ExecutePreprocessor.timeout=300 \
+  --output-dir="$output_dir" 'Physics-Informed Neural Networks.ipynb'
+```
+
 PINNs were developed by Raissi et al. in 2017 in this article: https://arxiv.org/abs/1711.10561.
 
 Standard Neural Networks (NNs) generally fail at solving even simple linear PDEs. PINNs use NNs and incorporate the PDE inside the
